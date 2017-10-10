@@ -5,7 +5,6 @@
 
 ESqlQuery::ESqlQuery()
 {
-
 }
 
 void ESqlQuery::initTables() {
@@ -38,4 +37,18 @@ void ESqlQuery::insertIntoItems(QString type, QString url) {
     }else {
         qDebug() << "ESqlQuery::insertIntoItems:: не удалось создать объект " + type + " в таблице items";
     }
+}
+
+void ESqlQuery::removeFromInventory(int itemRow, int itemColumn) {
+    this->prepare("DELETE FROM inventory WHERE num_row = :num_row AND num_column = :num_column");
+    this->bindValue(":num_row", itemRow);
+    this->bindValue(":num_column", itemColumn);
+    this->exec();
+}
+
+void ESqlQuery::updateInInventory(int itemRow, int itemColumn) {
+    this->prepare("UPDATE inventory SET count = count - 1 WHERE num_row = :num_row AND num_column = :num_column");
+    this->bindValue(":num_row", itemRow);
+    this->bindValue(":num_column", itemColumn);
+    this->exec();
 }

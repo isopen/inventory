@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QJsonDocument>
 #include "client/clientsocketadapter.h"
+#include "esqlquery.h"
 
 PlayingFieldTableWidget::PlayingFieldTableWidget(int rows, int columns, QWidget *parent)
     :QTableWidget(rows, columns, parent)
@@ -196,14 +197,11 @@ void PlayingFieldTableWidget::removeItemPlayingField(QMouseEvent *event, bool mu
         int targetItemRow = targetItem->row();
         int targetItemColumn = targetItem->column();
 
-        QSqlQuery query;
+        ESqlQuery query;
 
         if(multiType) {
 
-            query.prepare("DELETE FROM inventory WHERE num_row = :num_row AND num_column = :num_column");
-            query.bindValue(":num_row", targetItemRow);
-            query.bindValue(":num_column", targetItemColumn);
-            query.exec();
+            query.removeFromInventory(targetItemRow, targetItemColumn);
 
             playFieldVector[targetItemRow][targetItemColumn][0] = 0;
             playFieldVector[targetItemRow][targetItemColumn][1] = "";
@@ -211,20 +209,14 @@ void PlayingFieldTableWidget::removeItemPlayingField(QMouseEvent *event, bool mu
 
         }else {
 
-            query.prepare("UPDATE inventory SET count = count - 1 WHERE num_row = :num_row AND num_column = :num_column");
-            query.bindValue(":num_row", targetItemRow);
-            query.bindValue(":num_column", targetItemColumn);
-            query.exec();
+            query.updateInInventory(targetItemRow, targetItemColumn);
 
             playFieldVector[targetItemRow][targetItemColumn][0] = playFieldVector[targetItemRow][targetItemColumn][0].toInt() - 1;
             if(playFieldVector[targetItemRow][targetItemColumn][0] != 0) {
                 this->item(targetItem->row(), targetItem->column())->setText(QString::number(playFieldVector[targetItemRow][targetItemColumn][0].toInt()));
             }else {
 
-                query.prepare("DELETE FROM inventory WHERE num_row = :num_row AND num_column = :num_column");
-                query.bindValue(":num_row", targetItemRow);
-                query.bindValue(":num_column", targetItemColumn);
-                query.exec();
+                query.removeFromInventory(targetItemRow, targetItemColumn);
 
                 playFieldVector[targetItemRow][targetItemColumn][1] = "";
                 this->setItem(targetItem->row(), targetItem->column(), new QTableWidgetItem);
